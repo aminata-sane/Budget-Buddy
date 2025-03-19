@@ -13,7 +13,7 @@ def create_table():
             id INTEGER PRIMARY KEY,
             date TEXT NOT NULL,
             retrait REAL,
-            dépot REAL,
+            depot REAL,
             transfert REAL,
             montant REAL NOT NULL,
             description TEXT
@@ -30,28 +30,46 @@ def create_table():
         )
     ''')
     
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS accounts (
+            ID_account INTEGER PRIMARY KEY,
+            ID_client INTEGER,
+            account_type TEXT NOT NULL,
+            balance REAL NOT NULL,
+            FOREIGN KEY (ID_client) REFERENCES clients (ID_client)
+        )
+    ''')
+    
     connection.commit()
     connection.close()
 
 def add_client(nom, prenom, email, mot_de_passe):
     connection = create_connection()
     cursor = connection.cursor()
-    cursor.execute('''
-        INSERT INTO clients (Nom, Prénom, Email, Mot_de_passe)
-        VALUES (?, ?, ?, ?)
-    ''', (nom, prenom, email, mot_de_passe))
-    connection.commit()
-    connection.close()
+    try:
+        cursor.execute('''
+            INSERT INTO clients (Nom, Prenom, Email, Mot_de_passe)
+            VALUES (?, ?, ?, ?)
+        ''', (nom, prenom, email, mot_de_passe))
+        connection.commit()
+    except Exception as e:
+        print(f"Erreur lors de l'ajout du client : {e}")
+        raise
+    finally:
+        connection.close()
 
 def get_clients():
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM clients')
     clients = cursor.fetchall()
+    print(f"Clients récupérés: {clients}")  # Ajoutez ce message de débogage pour vérifier les clients récupérés
     connection.close()
     return clients
 
 if __name__ == '__main__':
     create_table()
+
+
 
 
