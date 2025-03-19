@@ -1,0 +1,5 @@
+{
+    "javascript.suggest.enabled": true,
+    "typescript.suggest.enabled": true,
+    "github.copilot.editor.enableAutoCompletions": false
+}
