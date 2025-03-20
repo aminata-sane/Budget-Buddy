@@ -1,4 +1,8 @@
+import os
 import sqlite3
+
+#Utilisez un chemein absolu pour la base de données
+db_path = os.path.join(os.path.dirname(__file__), 'clients.db')
 
 def create_connection():
     connection = sqlite3.connect('budget_buddy.db')
@@ -34,21 +38,21 @@ def create_table():
     connection.close()
 
 def add_client(nom, prenom, email, mot_de_passe):
-    connection = create_connection()
-    cursor = connection.cursor()
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO clients (Nom, Prénom, Email, Mot_de_passe)
+        INSERT INTO clients (Nom, Prenom, Email, Mot_de_passe)
         VALUES (?, ?, ?, ?)
     ''', (nom, prenom, email, mot_de_passe))
-    connection.commit()
-    connection.close()
+    conn.commit()
+    conn.close()
 
 def get_clients():
-    connection = create_connection()
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM clients')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT ID, Nom, Prenom, Email FROM clients')
     clients = cursor.fetchall()
-    connection.close()
+    conn.close()
     return clients
 
 if __name__ == '__main__':
