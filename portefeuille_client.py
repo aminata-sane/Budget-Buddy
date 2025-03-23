@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from inscription_client import RegistrationApp  # Importer le formulaire d'inscription
-from database import add_client, get_clients
+from database import add_client, get_clients, get_clients_of_banker
 import re
 import hashlib
 from compte_client import ClientAccountApp  # Importer la classe ClientAccountApp
@@ -15,54 +15,27 @@ class PortefeuilleClientApp:
         self.create_widgets()
 
     def create_widgets(self):
-        self.label = ttk.Label(self.parent, text="Gestion des Clients")
-        self.label.pack(pady=10)
-
-        self.add_button = ttk.Button(self.parent, text="Ajouter un client", command=self.open_registration_form)
-        self.add_button.pack(pady=10)
-
-        self.view_button = ttk.Button(self.parent, text="Voir les clients", command=self.view_clients)
-        self.view_button.pack(pady=10)
-
-        # Ajouter un bouton "Back" pour revenir à la page d'accueil
-        self.back_button = ttk.Button(self.parent, text="Back", command=self.back_callback)
-        self.back_button.pack(pady=10)
-
-    def open_registration_form(self):
-        registration_window = tk.Toplevel(self.parent)
-        RegistrationApp(registration_window)
+        tk.Label(self.parent, text="Customer list", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
         
-        # Ajouter un bouton "Back" pour fermer la fenêtre d'inscription
-        back_button = ttk.Button(registration_window, text="Back", command=registration_window.destroy)
-        back_button.pack(pady=10)
-
-    def view_clients(self):
-        clients = get_clients()
-        self.clients_window = tk.Toplevel(self.parent)
-        self.clients_window.title("Liste des clients")
-
-        self.tree = ttk.Treeview(self.clients_window, columns=('ID', 'Nom', 'Prenom', 'Email'), show='headings')
+        clients = get_clients_of_banker(self.banker_id)
+        
+        self.tree = ttk.Treeview(self.parent, columns=('ID', 'Name', 'Surname', 'Email'), show='headings')
         self.tree.heading('ID', text='ID')
-        self.tree.heading('Nom', text='Nom')
-        self.tree.heading('Prenom', text='Prenom')
+        self.tree.heading('Name', text='Name')
+        self.tree.heading('Surname', text='Surname')
         self.tree.heading('Email', text='Email')
 
         for client in clients:
             self.tree.insert('', tk.END, values=client)
-
-        self.tree.pack(pady=10)
         
-        # Ajouter un bouton "Back" pour fermer la fenêtre de la liste des clients
-        back_button = ttk.Button(self.clients_window, text="Back", command=self.clients_window.destroy)
-        back_button.pack(pady=10)
+        self.tree.pack(pady=10)
+        self.tree.bind("<Double-1>", self.on_client_click)  # Ajouter un événement de double-clic
 
-        # Ajouter un événement de clic pour ouvrir le compte client
-        self.tree.bind("<Double-1>", self.on_client_click)
+        tk.Button(self.parent, text="Back", command=self.back_callback, bg="white", fg="black").pack(pady=10)
 
     def on_client_click(self, event):
         selected_item = self.tree.selection()[0]
-        client_id = self.tree.item(selected_item)['values'][0]
-        self.clients_window.destroy()
+        client_id = self.tree.item(selected_item, 'values')[0]
         self.clear_frame()
         ClientAccountApp(self.parent, client_id, back_callback=self.back_callback)
 

@@ -45,8 +45,8 @@ def create_table():
             transfert REAL,
             montant REAL NOT NULL,
             description TEXT,
-            id_client INTEGER,
-            FOREIGN KEY (id_client) REFERENCES clients(id)
+            ID_client INTEGER,
+            FOREIGN KEY (ID_client) REFERENCES clients(id)
         )
     ''')
     
@@ -54,10 +54,10 @@ def create_table():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS banker_clients (
             ID_banker INTEGER,
-            id_client INTEGER,
-            PRIMARY KEY (ID_banker, id_client),
+            ID_client INTEGER,
+            PRIMARY KEY (ID_banker, ID_client),
             FOREIGN KEY (ID_banker) REFERENCES banker(ID_banker),
-            FOREIGN KEY (id_client) REFERENCES clients(id)
+            FOREIGN KEY (ID_client) REFERENCES clients(id)
         )
     ''')
     
@@ -93,13 +93,13 @@ def add_banker(nom, prenom, email, mot_de_passe):
     connection.close()
 
 # Connection between banker and client
-def assign_client_to_banker(ID_banker, id_client):
+def assign_client_to_banker(ID_banker, ID_client):
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute('''
-        INSERT INTO banker_clients (ID_banker, id_client)
+        INSERT INTO banker_clients (ID_banker, ID_client)
         VALUES (?, ?)
-    ''', (ID_banker, id_client))
+    ''', (ID_banker, ID_client))
     connection.commit()
     connection.close()
 
@@ -110,7 +110,7 @@ def get_clients_of_banker(ID_banker):
     cursor.execute('''
         SELECT clients.id, clients.Nom, clients.Prenom, clients.Email
         FROM clients
-        JOIN banker_clients ON clients.id = banker_clients.id_client
+        JOIN banker_clients ON clients.id = banker_clients.ID_client
         WHERE banker_clients.ID_banker = ?
     ''', (ID_banker,))
     clients = cursor.fetchall()
@@ -144,7 +144,7 @@ def add_transaction(client_id, transaction_type, date, reference, description, m
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute('''
-        INSERT INTO transactions (id_client, type, date, reference, description, montant)
+        INSERT INTO transactions (ID_client, type, date, reference, description, montant)
         VALUES (?, ?, ?, ?, ?, ?)
     ''', (client_id, transaction_type, date, reference, description, montant))
     connection.commit()
@@ -161,7 +161,7 @@ def get_transactions():
 def get_client_balance(client_id):
     connection = create_connection()
     cursor = connection.cursor()
-    cursor.execute('SELECT SUM(montant) FROM transactions WHERE id_client = ?', (client_id,))
+    cursor.execute('SELECT SUM(montant) FROM transactions WHERE ID_client = ?', (client_id,))
     balance = cursor.fetchone()[0]
     connection.close()
     

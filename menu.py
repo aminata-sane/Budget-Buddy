@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import os
 import hashlib
-from database import verify_client, add_banker, authenticate_banker, get_clients_of_banker  # Importer les fonctions nécessaires
+from database import verify_client, add_banker, authenticate_banker, get_clients_of_banker, add_client  # Importer les fonctions nécessaires
 from compte_client import ClientAccountApp  # Importer la classe ClientAccountApp
 from portefeuille_client import PortefeuilleClientApp  # Importer la classe PortefeuilleClientApp
 
@@ -12,34 +12,30 @@ class BankingApp:
         self.root = root
         self.root.title("Banking System")
         
-        # Get screen width and height
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        
-        # Set window size to screen size
-        self.root.geometry(f"{screen_width}x{screen_height}")
+        # Set window size to large smartphone size (e.g., 414x896 pixels)
+        self.root.geometry("414x896")
         
         # Set background color
         self.root.configure(bg="white")
         
         # Add logo and slogan
         logo_label = tk.Label(self.root, text="Bank Logo", font=("Arial", 24), bg="white", fg="black")
-        logo_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        logo_label.pack(pady=10)
         
         slogan_label = tk.Label(self.root, text="Your Friendly Bank !", font=("Arial", 16), bg="white", fg="black")
-        slogan_label.grid(row=0, column=1, padx=10, pady=5, sticky="n")
+        slogan_label.pack(pady=5)
         
         self.frame = tk.Frame(self.root, bg="white")
-        self.frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        self.frame.pack(fill=tk.BOTH, expand=True)
         
         self.load_images()
         self.show_home()
     
     def load_images(self):
-        self.client_photo = self.load_image("images/client.png", (150, 200))
-        self.banker_photo = self.load_image("images/bank.png", (150, 200))
-        self.inscription_photo = self.load_image("images/registration.png", (100, 100))
-        self.connexion_photo = self.load_image("images/login.png", (100, 100))
+        self.client_photo = self.load_image("images/client.png", (100, 150))  # Adjust image size
+        self.banker_photo = self.load_image("images/bank.png", (100, 150))  # Adjust image size
+        self.inscription_photo = self.load_image("images/registration.png", (75, 75))  # Adjust image size
+        self.connexion_photo = self.load_image("images/login.png", (75, 75))  # Adjust image size
     
     def load_image(self, image_path, size):
         if os.path.exists(image_path):
@@ -55,18 +51,18 @@ class BankingApp:
     
     def show_home(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Make your choice", font=("Arial", 14), bg="white", fg="black").grid(row=0, column=0, columnspan=2, pady=20)
+        tk.Label(self.frame, text="Make your choice", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
         
         client_button = tk.Button(self.frame, image=self.client_photo, command=self.show_client_login, borderwidth=0, bg="white")
-        client_button.grid(row=1, column=0, padx=20, pady=10)
+        client_button.pack(side=tk.LEFT, padx=20, pady=10)
         client_label = tk.Label(self.frame, text="Customer", font=("Arial", 12), cursor="hand2", bg="white", fg="black")
-        client_label.grid(row=2, column=0, pady=5)
+        client_label.pack(side=tk.LEFT, padx=20)
         client_label.bind("<Button-1>", lambda event: self.show_client_login())
 
         banker_button = tk.Button(self.frame, image=self.banker_photo, command=self.show_banker_page, borderwidth=0, bg="white")
-        banker_button.grid(row=1, column=1, padx=20, pady=10)
+        banker_button.pack(side=tk.RIGHT, padx=20, pady=10)
         banker_label = tk.Label(self.frame, text="Banker", font=("Arial", 12), cursor="hand2", bg="white", fg="black")
-        banker_label.grid(row=2, column=1, pady=5)
+        banker_label.pack(side=tk.RIGHT, padx=20)
         banker_label.bind("<Button-1>", lambda event: self.show_banker_page())
     
     def show_client_login(self):
@@ -160,22 +156,7 @@ class BankingApp:
     
     def show_clients_list(self, ID_banker):
         self.clear_frame()
-        
-        tk.Label(self.frame, text="Customer list", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
-        
-        clients = get_clients_of_banker(ID_banker)
-        
-        tree = ttk.Treeview(self.frame, columns=('ID', 'Name', 'Surname', 'Email'), show='headings')
-        tree.heading('ID', text='ID')
-        tree.heading('Name', text='Name')
-        tree.heading('Surname', text='Surname')
-        tree.heading('Email', text='Email')
-    
-        for client in clients:
-            tree.insert('', tk.END, values=client)
-        
-        tree.pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
+        PortefeuilleClientApp(self.frame, ID_banker, back_callback=self.show_home)
     
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
