@@ -112,13 +112,28 @@ class BankingApp:
         tk.Label(self.frame, text="Connexion", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
 
         tk.Button(self.frame, text="Back to Home", command=self.show_home, bg="white", fg="black", bd=0).pack(pady=10)
-    
+         
     def show_banker_page(self):
         self.clear_frame()
         tk.Label(self.frame, text="Choose your action", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-        tk.Button(self.frame, text="Registration", command=self.show_banker_registration, bg="white", fg="black").pack(pady=10)
-        tk.Button(self.frame, text="Login", command=self.show_banker_login, bg="white", fg="black").pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_home, bg="white", fg="black").pack(pady=10)
+
+        # Left side - Registration
+        inscription_label_b = tk.Label(self.frame, image=self.inscription_photo, bg="#FB84AE")
+        inscription_label_b.place(relx=0.25, rely=0.3, anchor="center")
+
+        # Button for Registration
+        registration_button = tk.Button(self.frame, text="Registration", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_registration)
+        registration_button.place(relx=0.25, rely=0.9, anchor="center")
+
+        # Right side - Login
+        connexion_label_b = tk.Label(self.frame, image=self.connexion_photo, bg="#FB84AE")
+        connexion_label_b.place(relx=0.75, rely=0.3, anchor="center")
+
+        # Button for Login
+        login_button = tk.Button(self.frame, text="Login", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_login)
+        login_button.place(relx=0.75, rely=0.9, anchor="center")
+
+        tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
 
     def show_banker_registration(self):
         self.clear_frame()
@@ -205,8 +220,22 @@ class BankingApp:
             tree.insert('', tk.END, values=client)
         
         tree.pack(pady=10)
+
+        # Додаємо обробник подій для Treeview
+        tree.bind('<Button-1>', lambda event: self.on_client_selected(event, tree))
+    
         tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
     
+    def on_client_selected(self, event, tree):
+        item = tree.identify_row(event.y)  # Отримуємо ідентифікатор рядка, на який натиснули
+        if item:
+            client_id = tree.item(item, 'values')[0]  # Отримуємо ID клієнта з першого стовпця
+            self.show_client_account(client_id)
+
+    def show_client_account(self, client_id):
+        self.clear_frame()
+        ClientAccountApp(self.frame, client_id, back_callback=self.show_home)
+
     def create_connection(self):
         return sqlite3.connect('budget_buddy.db')
     
