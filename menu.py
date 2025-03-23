@@ -16,43 +16,41 @@ class BankingApp:
 
         create_table()
         
-        # Отримуємо розміри екрану
+        # The size of ecran
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         
-        # Встановлюємо розмір вікна на весь екран
         self.root.geometry(f"{screen_width}x{screen_height}")
         
-        # Створюємо градієнтний фон
+        # Set gradient background
         self.bg_image = self.create_gradient_image(screen_width, screen_height, "#757D86", "#FB84AE")
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         
-        # Відображаємо градієнтний фон
+        # Show gradient background
         self.bg_label = tk.Label(self.root, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         
-        # Додаємо логотип і заголовок
+        # Add logo and label
         self.logo_image = self.load_image("images/logo.png", (80, 80))
         if self.logo_image:
             self.logo_label = tk.Label(self.root, image=self.logo_image, bg="#FB84AE")
-            self.logo_label.place(x=20, y=20)  # Логотип зверху зліва
+            self.logo_label.place(x=20, y=20) 
         
         title_label = tk.Label(self.root, text="Optimize Your Finances like your code", font=("Arial", 24, "bold"), fg="white", bg="#5E5E5E", padx=20, pady=10)
-        title_label.place(relx=0.5, y=20, anchor="n")  # Заголовок зверху по центру
+        title_label.place(relx=0.5, y=20, anchor="n")
         
-        # Основний фрейм для вмісту
-        self.frame = tk.Frame(self.root, bg="#917d8f")  # Фон фрейму відповідає градієнту
+        # Main frame
+        self.frame = tk.Frame(self.root, bg="#917d8f") 
         self.frame.place(relx=0.5, rely=0.5, anchor="center", width=screen_width * 0.9, height=screen_height * 0.6)
         
         self.load_images()
         self.show_home()
 
     def create_gradient_image(self, width, height, color1, color2):
-        """
-        Створює градієнтне зображення з двох кольорів.
-        """
+
+# Two colors gradient
         gradient = Image.new("RGB", (width, height), color1)
-        draw = ImageDraw.Draw(gradient)  # Створюємо об'єкт для малювання
+        draw = ImageDraw.Draw(gradient) 
         
         for i in range(height):
             ratio = i / height
@@ -64,8 +62,8 @@ class BankingApp:
         return gradient
     
     def load_images(self):
-        self.client_photo = self.load_image("images/client.png", (400, 500))  # Збільшені розміри
-        self.banker_photo = self.load_image("images/bank.png", (400, 500))    # Збільшені розміри
+        self.client_photo = self.load_image("images/client.png", (400, 500)) 
+        self.banker_photo = self.load_image("images/bank.png", (400, 500))    
         self.inscription_photo = self.load_image("images/registration.png", (80, 80))
         self.connexion_photo = self.load_image("images/login.png", (80, 80))
 
@@ -78,29 +76,28 @@ class BankingApp:
             return None
     
     def clear_frame(self):
-        """Очищує вміст фрейму."""
+    #    Clean frame
         for widget in self.frame.winfo_children():
             widget.destroy()
     
     def show_home(self):
         self.clear_frame()
 
-        # Ліва сторона: картинка клієнта
+        # Left side - client
         client_image_label = tk.Label(self.frame, image=self.client_photo, bg="#FB84AE")
-        client_image_label.place(relx=0.25, rely=0.3, anchor="center")  # Ліва картинка
+        client_image_label.place(relx=0.25, rely=0.3, anchor="center") 
         
-        # Права сторона: картинка банкіра
+        # Right side - banker
         banker_image_label = tk.Label(self.frame, image=self.banker_photo, bg="#FB84AE")
-        banker_image_label.place(relx=0.75, rely=0.3, anchor="center")  # Права картинка
-            #     # Кнопка для клієнта
-
-        # Кнопка для клієнта
-        client_button = tk.Button(self.frame, text="Customer", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_client_login)
-        client_button.place(relx=0.25, rely=0.9, anchor="center")  # Кнопка під лівою картинкою
+        banker_image_label.place(relx=0.75, rely=0.3, anchor="center")  
         
-        # Кнопка для банкіра
+        #  Button for client
+        client_button = tk.Button(self.frame, text="Customer", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_client_login)
+        client_button.place(relx=0.25, rely=0.9, anchor="center")  
+        
+        # Button for banker
         banker_button = tk.Button(self.frame, text="Banker", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_page)
-        banker_button.place(relx=0.75, rely=0.9, anchor="center")  # Кнопка під правою картинкою
+        banker_button.place(relx=0.75, rely=0.9, anchor="center")  
     
     def show_client_login(self):
         self.clear_frame()
