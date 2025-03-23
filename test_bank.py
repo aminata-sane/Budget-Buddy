@@ -40,9 +40,7 @@ class BankingApp:
 
         banker_button = tk.Button(self.frame, image=self.banker_photo, command=self.show_banker_page, borderwidth=0)
         banker_button.grid(row=1, column=1, padx=20, pady=10)
-        banker_label = tk.Label(self.frame, text="Banker", font=("Arial", 12), cursor="hand2")
-        banker_label.grid(row=2, column=1, pady=5)
-        banker_label.bind("<Button-1>", lambda event: self.show_banker_page())
+        tk.Label(self.frame, text="Banker", font=("Arial", 12)).pack(side="right")
     
     def show_client_login(self):
         self.clear_frame()
