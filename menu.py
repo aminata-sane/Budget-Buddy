@@ -1,13 +1,9 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import os
-import subprocess
-
-def open_inscription_client():
-    subprocess.Popen(["/usr/local/bin/python3", "/Users/mameaminataconstancesane/Desktop/Budget-Buddy/inscription_client.py"])
-
-def open_connexion_client():
-    subprocess.Popen(["/usr/local/bin/python3", "/Users/mameaminataconstancesane/Desktop/Budget-Buddy/connexion_client.py"])
+from database import verify_client  # Importer la fonction de vérification
+from compte_client import ClientAccountApp  # Importer la classe ClientAccountApp
 
 def show_inscription_client():
     # Clear the window
@@ -43,12 +39,26 @@ def show_connexion_client():
     
     # Add form fields
     tk.Label(frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-    tk.Entry(frame).pack(pady=5)
+    email_entry = tk.Entry(frame)
+    email_entry.pack(pady=5)
     
     tk.Label(frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-    tk.Entry(frame, show="*").pack(pady=5)
+    password_entry = tk.Entry(frame, show="*")
+    password_entry.pack(pady=5)
     
-    tk.Button(frame, text="Se connecter", bg="white", fg="black", bd=0).pack(pady=10)
+    def login():
+        email = email_entry.get()
+        password = password_entry.get()
+        client_id = verify_client(email, password)
+        if client_id:
+            # Clear the window and show the client account
+            for widget in frame.winfo_children():
+                widget.destroy()
+            ClientAccountApp(frame, client_id, back_callback=show_home)
+        else:
+            messagebox.showerror("Erreur de connexion", "Email ou mot de passe incorrect")
+    
+    tk.Button(frame, text="Se connecter", command=login, bg="white", fg="black", bd=0).pack(pady=10)
     tk.Button(frame, text="Back", command=show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
 
 def show_client_login():
@@ -62,11 +72,11 @@ def show_client_login():
     # Add buttons with images
     inscription_button = tk.Button(frame, image=inscription_photo, command=show_inscription_client, bg="white", bd=0)
     inscription_button.pack(side=tk.LEFT, padx=20, pady=10)
-    tk.Label(frame, text="Inscription", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
+    tk.Label(frame, text="registration", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
 
     connexion_button = tk.Button(frame, image=connexion_photo, command=show_connexion_client, bg="white", bd=0)
     connexion_button.pack(side=tk.RIGHT, padx=20, pady=10)
-    tk.Label(frame, text="Connexion", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
+    tk.Label(frame, text="login", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
 
     tk.Button(frame, text="Back to Home", command=show_home, bg="white", fg="black", bd=0).pack(pady=10)
 
@@ -134,8 +144,8 @@ def load_image(image_path, size):
 
 client_photo = load_image("images/client.png", (screen_width // 2, screen_height - 200))
 banker_photo = load_image("images/bank.png", (screen_width // 2, screen_height - 200))
-inscription_photo = load_image("images/inscription.png", (100, 100))
-connexion_photo = load_image("images/connexion.png", (100, 100))
+inscription_photo = load_image("images/registration.png", (100, 100))
+connexion_photo = load_image("images/login.png", (100, 100))
 
 # New page
 show_home()

@@ -26,6 +26,10 @@ class ClientApp:
     def open_registration_form(self):
         registration_window = tk.Toplevel(self.root)
         RegistrationApp(registration_window)
+        
+        # Ajouter un bouton "Back" pour fermer la fenêtre d'inscription
+        back_button = ttk.Button(registration_window, text="Back", command=registration_window.destroy)
+        back_button.pack(pady=10)
 
     def view_clients(self):
         clients = get_clients()
@@ -44,6 +48,10 @@ class ClientApp:
             self.tree.insert('', tk.END, values=client)
 
         self.tree.pack(pady=10)
+        
+        # Ajouter un bouton "Back" pour fermer la fenêtre de la liste des clients
+        back_button = ttk.Button(self.clients_window, text="Back", command=self.clients_window.destroy)
+        back_button.pack(pady=10)
 
 if __name__ == '__main__':
     root = tk.Tk()
