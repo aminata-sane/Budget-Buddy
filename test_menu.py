@@ -1,36 +1,18 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
-import os
+import sqlite3
 import hashlib
-from database import verify_client, add_banker, authenticate_banker, get_clients_of_banker  # Importer les fonctions nécessaires
-from compte_client import ClientAccountApp  # Importer la classe ClientAccountApp
-from portefeuille_client import PortefeuilleClientApp  # Importer la classe PortefeuilleClientApp
+import os
 
 class BankingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Banking System")
-        
-        # Get screen width and height
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        
-        # Set window size to screen size
-        self.root.geometry(f"{screen_width}x{screen_height}")
-        
-        # Set background color
-        self.root.configure(bg="white")
-        
-        # Add logo and slogan
-        logo_label = tk.Label(self.root, text="Bank Logo", font=("Arial", 24), bg="white", fg="black")
-        logo_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
-        
-        slogan_label = tk.Label(self.root, text="Your Friendly Bank !", font=("Arial", 16), bg="white", fg="black")
-        slogan_label.grid(row=0, column=1, padx=10, pady=5, sticky="n")
+        self.root.geometry("600x400")
         
         self.frame = tk.Frame(self.root, bg="white")
-        self.frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        self.frame.pack(fill=tk.BOTH, expand=True)
         
         self.load_images()
         self.show_home()
@@ -71,17 +53,8 @@ class BankingApp:
     
     def show_client_login(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Client Login Page", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-        
-        inscription_button = tk.Button(self.frame, image=self.inscription_photo, command=self.show_inscription_client, bg="white", bd=0)
-        inscription_button.pack(side=tk.LEFT, padx=20, pady=10)
-        tk.Label(self.frame, text="Inscription", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
-
-        connexion_button = tk.Button(self.frame, image=self.connexion_photo, command=self.show_connexion_client, bg="white", bd=0)
-        connexion_button.pack(side=tk.RIGHT, padx=20, pady=10)
-        tk.Label(self.frame, text="Connexion", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
-
-        tk.Button(self.frame, text="Back to Home", command=self.show_home, bg="white", fg="black", bd=0).pack(pady=10)
+        tk.Label(self.frame, text="Enter for customer", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
+        tk.Button(self.frame, text="Back", command=self.show_home, bg="white", fg="black").pack(pady=10)
     
     def show_banker_page(self):
         self.clear_frame()
@@ -125,7 +98,7 @@ class BankingApp:
             return
         
         hashed_password = self.hash_password(password)
-        add_banker(name, surname, email, hashed_password)
+        self.add_banker(name, surname, email, hashed_password)
         messagebox.showinfo("Success", "Registration successful!")
         self.show_banker_page()
     
@@ -149,12 +122,11 @@ class BankingApp:
         email = self.login_email_entry.get()
         password = self.login_password_entry.get()
         
-        banker = authenticate_banker(email, password)
+        banker = self.authenticate_banker(email, password)
         
         if banker:
             messagebox.showinfo("Success", "Logged in!")
-            self.clear_frame()
-            PortefeuilleClientApp(self.frame, banker[0], back_callback=self.show_home)
+            self.show_clients_list(banker[0])
         else:
             messagebox.showerror("Error", "Incorrect email or password.")
     
@@ -163,7 +135,7 @@ class BankingApp:
         
         tk.Label(self.frame, text="Customer list", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
         
-        clients = get_clients_of_banker(ID_banker)
+        clients = self.get_clients_of_banker(ID_banker)
         
         tree = ttk.Treeview(self.frame, columns=('ID', 'Name', 'Surname', 'Email'), show='headings')
         tree.heading('ID', text='ID')
@@ -177,71 +149,41 @@ class BankingApp:
         tree.pack(pady=10)
         tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
     
+    def create_connection(self):
+        return sqlite3.connect('budget_buddy.db')
+    
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
-
-    def show_inscription_client(self):
-        self.clear_frame()
-        tk.Label(self.frame, text="Formulaire d'inscription Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-        
-        tk.Label(self.frame, text="Nom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.nom_entry = tk.Entry(self.frame)
-        self.nom_entry.pack(pady=5)
-        
-        tk.Label(self.frame, text="Prénom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.prenom_entry = tk.Entry(self.frame)
-        self.prenom_entry.pack(pady=5)
-        
-        tk.Label(self.frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.email_entry = tk.Entry(self.frame)
-        self.email_entry.pack(pady=5)
-        
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.password_entry = tk.Entry(self.frame, show="*")
-        self.password_entry.pack(pady=5)
-        
-        tk.Button(self.frame, text="S'inscrire", command=self.register_client, bg="white", fg="black", bd=0).pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
     
-    def register_client(self):
-        nom = self.nom_entry.get()
-        prenom = self.prenom_entry.get()
-        email = self.email_entry.get()
-        password = self.password_entry.get()
-        
-        if not (nom and prenom and email and password):
-            messagebox.showwarning("Error", "Fill in all fields!")
-            return
-        
-        hashed_password = self.hash_password(password)
-        add_client(nom, prenom, email, hashed_password)
-        messagebox.showinfo("Success", "Registration successful!")
-        self.show_client_login()
-
-    def show_connexion_client(self):
-        self.clear_frame()
-        tk.Label(self.frame, text="Formulaire de Connexion Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-        
-        tk.Label(self.frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.email_entry = tk.Entry(self.frame)
-        self.email_entry.pack(pady=5)
-        
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.password_entry = tk.Entry(self.frame, show="*")
-        self.password_entry.pack(pady=5)
-        
-        tk.Button(self.frame, text="Se connecter", command=self.login_client, bg="white", fg="black", bd=0).pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
+    def authenticate_banker(self, email, password):
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        cursor.execute('SELECT ID_banker FROM banker WHERE Email = ? AND Mot_de_passe = ?', 
+                       (email, self.hash_password(password)))
+        banker = cursor.fetchone()
+        connection.close()
+        return banker  
     
-    def login_client(self):
-        email = self.email_entry.get()
-        password = self.password_entry.get()
-        client_id = verify_client(email, password)
-        if client_id:
-            self.clear_frame()
-            ClientAccountApp(self.frame, client_id, back_callback=self.show_home)
-        else:
-            messagebox.showerror("Erreur de connexion", "Email ou mot de passe incorrect")
+    def add_banker(self, nom, prenom, email, mot_de_passe):
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        cursor.execute('INSERT INTO banker (Nom, Prenom, Email, Mot_de_passe) VALUES (?, ?, ?, ?)', 
+                       (nom, prenom, email, mot_de_passe))
+        connection.commit()
+        connection.close()
+    
+    def get_clients_of_banker(self, ID_banker):
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        cursor.execute('''
+            SELECT clients.ID_client, clients.Nom, clients.Prenom, clients.Email
+            FROM clients
+            JOIN banker_clients ON clients.ID_client = banker_clients.ID_client
+            WHERE banker_clients.ID_banker = ?
+        ''', (ID_banker,))
+        clients = cursor.fetchall()
+        connection.close()
+        return clients
 
 if __name__ == '__main__':
     root = tk.Tk()

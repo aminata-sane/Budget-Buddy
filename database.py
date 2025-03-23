@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import hashlib
 
 # Utilisez un chemin absolu pour la base de données
 db_path = os.path.join(os.path.dirname(__file__), 'budget_buddy.db')
@@ -12,6 +13,7 @@ def create_table():
     connection = create_connection()
     cursor = connection.cursor()
     
+    # table clients
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,16 +24,40 @@ def create_table():
         )
     ''')
     
+    # table banker
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS banker (
+            ID_banker INTEGER PRIMARY KEY AUTOINCREMENT,
+            Nom TEXT NOT NULL,
+            Prenom TEXT NOT NULL,
+            Email TEXT NOT NULL UNIQUE,
+            Mot_de_passe TEXT NOT NULL
+        )
+    ''')
+    
+    # table transactions
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            client_id INTEGER,
-            type TEXT NOT NULL,
             date TEXT NOT NULL,
-            reference TEXT NOT NULL,
-            description TEXT,
+            retrait REAL,
+            depot REAL,
+            transfert REAL,
             montant REAL NOT NULL,
-            FOREIGN KEY (client_id) REFERENCES clients(id)
+            description TEXT,
+            id_client INTEGER,
+            FOREIGN KEY (id_client) REFERENCES clients(id)
+        )
+    ''')
+    
+    # table of banker_clients connection
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS banker_clients (
+            ID_banker INTEGER,
+            id_client INTEGER,
+            PRIMARY KEY (ID_banker, id_client),
+            FOREIGN KEY (ID_banker) REFERENCES banker(ID_banker),
+            FOREIGN KEY (id_client) REFERENCES clients(id)
         )
     ''')
     
@@ -39,52 +65,69 @@ def create_table():
     connection.close()
 
 def add_client(nom, prenom, email, mot_de_passe):
-    conn = create_connection()
-    cursor = conn.cursor()
+    connection = create_connection()
+    cursor = connection.cursor()
     cursor.execute('''
         INSERT INTO clients (Nom, Prenom, Email, Mot_de_passe)
         VALUES (?, ?, ?, ?)
     ''', (nom, prenom, email, mot_de_passe))
-    conn.commit()
-    conn.close()
-
-def get_clients():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, Nom, Prenom, Email FROM clients')
-    clients = cursor.fetchall()
-    conn.close()
-    return clients
-
-def add_transaction(client_id, transaction_type, date, reference, description, montant):
-    connection = create_connection()
-    cursor = connection.cursor()
-    cursor.execute('''
-        INSERT INTO transactions (client_id, type, date, reference, description, montant)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (client_id, transaction_type, date, reference, description, montant))
     connection.commit()
     connection.close()
 
-def get_transactions():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM transactions')
-    transactions = cursor.fetchall()
-    conn.close()
-    return transactions
-
-def get_client_balance(client_id):
+def get_clients():
     connection = create_connection()
     cursor = connection.cursor()
-    cursor.execute('SELECT SUM(montant) FROM transactions WHERE client_id = ?', (client_id,))
-    balance = cursor.fetchone()[0]
+    cursor.execute('SELECT * FROM clients')
+    clients = cursor.fetchall()
     connection.close()
-    
-    if balance is None:
-        balance = 0.00
-    
-    return balance
+    return clients
+
+def add_banker(nom, prenom, email, mot_de_passe):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('''
+        INSERT INTO banker (Nom, Prenom, Email, Mot_de_passe)
+        VALUES (?, ?, ?, ?)
+    ''', (nom, prenom, email, mot_de_passe))
+    connection.commit()
+    connection.close()
+
+# Connection between banker and client
+def assign_client_to_banker(ID_banker, id_client):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('''
+        INSERT INTO banker_clients (ID_banker, id_client)
+        VALUES (?, ?)
+    ''', (ID_banker, id_client))
+    connection.commit()
+    connection.close()
+
+# Get all clients of a banker
+def get_clients_of_banker(ID_banker):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('''
+        SELECT clients.id, clients.Nom, clients.Prenom, clients.Email
+        FROM clients
+        JOIN banker_clients ON clients.id = banker_clients.id_client
+        WHERE banker_clients.ID_banker = ?
+    ''', (ID_banker,))
+    clients = cursor.fetchall()
+    connection.close()
+    return clients
+
+# Banker authentication
+def authenticate_banker(email, mot_de_passe):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('''
+        SELECT ID_banker FROM banker WHERE Email = ? AND Mot_de_passe = ?
+    ''', (email, mot_de_passe))
+    banker = cursor.fetchone()
+    connection.close()
+    # Return the ID of the banker if found
+    return banker
 
 def verify_client(email, password):
     conn = create_connection()
@@ -96,6 +139,36 @@ def verify_client(email, password):
     if client and client[1] == password:
         return client[0]  # Return client ID if password matches
     return None
+
+def add_transaction(client_id, transaction_type, date, reference, description, montant):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('''
+        INSERT INTO transactions (id_client, type, date, reference, description, montant)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (client_id, transaction_type, date, reference, description, montant))
+    connection.commit()
+    connection.close()
+
+def get_transactions():
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM transactions')
+    transactions = cursor.fetchall()
+    connection.close()
+    return transactions
+
+def get_client_balance(client_id):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute('SELECT SUM(montant) FROM transactions WHERE id_client = ?', (client_id,))
+    balance = cursor.fetchone()[0]
+    connection.close()
+    
+    if balance is None:
+        balance = 0.00
+    
+    return balance
 
 if __name__ == '__main__':
     create_table()
