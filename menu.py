@@ -71,11 +71,11 @@ class BankingApp:
         
         inscription_button = tk.Button(self.frame, image=self.inscription_photo, command=self.show_inscription_client, bg="white", bd=0)
         inscription_button.pack(side=tk.LEFT, padx=20, pady=10)
-        tk.Label(self.frame, text="Inscription", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
+        tk.Label(self.frame, text="Registration", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
 
         connexion_button = tk.Button(self.frame, image=self.connexion_photo, command=self.show_connexion_client, bg="white", bd=0)
         connexion_button.pack(side=tk.RIGHT, padx=20, pady=10)
-        tk.Label(self.frame, text="Connexion", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
+        tk.Label(self.frame, text="Login", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
 
         tk.Button(self.frame, text="Back to Home", command=self.show_home, bg="white", fg="black", bd=0).pack(pady=10)
     
@@ -163,13 +163,13 @@ class BankingApp:
 
     def show_inscription_client(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Formulaire d'inscription Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
+        tk.Label(self.frame, text="Client Registration Form", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
         
-        tk.Label(self.frame, text="Nom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
+        tk.Label(self.frame, text="Name:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
         self.nom_entry = tk.Entry(self.frame)
         self.nom_entry.pack(pady=5)
         
-        tk.Label(self.frame, text="Prénom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
+        tk.Label(self.frame, text="Surname:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
         self.prenom_entry = tk.Entry(self.frame)
         self.prenom_entry.pack(pady=5)
         
@@ -177,41 +177,41 @@ class BankingApp:
         self.email_entry = tk.Entry(self.frame)
         self.email_entry.pack(pady=5)
         
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
+        tk.Label(self.frame, text="Password:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
         self.password_entry = tk.Entry(self.frame, show="*")
         self.password_entry.pack(pady=5)
         
-        tk.Button(self.frame, text="S'inscrire", command=self.register_client, bg="white", fg="black", bd=0).pack(pady=10)
+        tk.Button(self.frame, text="Register", command=self.register_client, bg="white", fg="black", bd=0).pack(pady=10)
         tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
     
     def register_client(self):
-        nom = self.nom_entry.get()
-        prenom = self.prenom_entry.get()
+        name = self.nom_entry.get()
+        surname = self.prenom_entry.get()
         email = self.email_entry.get()
         password = self.password_entry.get()
         
-        if not (nom and prenom and email and password):
+        if not (name and surname and email and password):
             messagebox.showwarning("Error", "Fill in all fields!")
             return
         
         hashed_password = self.hash_password(password)
-        add_client(nom, prenom, email, hashed_password)
+        add_client(name, surname, email, hashed_password)
         messagebox.showinfo("Success", "Registration successful!")
         self.show_client_login()
 
     def show_connexion_client(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Formulaire de Connexion Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
+        tk.Label(self.frame, text="Client Login Form", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
         
         tk.Label(self.frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
         self.email_entry = tk.Entry(self.frame)
         self.email_entry.pack(pady=5)
         
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
+        tk.Label(self.frame, text="Password:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
         self.password_entry = tk.Entry(self.frame, show="*")
         self.password_entry.pack(pady=5)
         
-        tk.Button(self.frame, text="Se connecter", command=self.login_client, bg="white", fg="black", bd=0).pack(pady=10)
+        tk.Button(self.frame, text="Login", command=self.login_client, bg="white", fg="black", bd=0).pack(pady=10)
         tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
     
     def login_client(self):
@@ -222,7 +222,7 @@ class BankingApp:
             self.clear_frame()
             ClientAccountApp(self.frame, client_id, back_callback=self.show_home)
         else:
-            messagebox.showerror("Erreur de connexion", "Email ou mot de passe incorrect")
+            messagebox.showerror("Login Error", "Incorrect email or password")
 
 if __name__ == '__main__':
     root = tk.Tk()
