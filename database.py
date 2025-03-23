@@ -118,12 +118,12 @@ def get_clients_of_banker(ID_banker):
     return clients
 
 # Banker authentication
-def authenticate_banker(email, mot_de_passe):
+def authenticate_banker(email, password):
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute('''
-        SELECT ID_banker FROM banker WHERE Email = ? AND Mot_de_passe = ?
-    ''', (email, mot_de_passe))
+        SELECT ID_banker FROM banker WHERE Email = ? AND Password = ?
+    ''', (email, password))
     banker = cursor.fetchone()
     connection.close()
     # Return the ID of the banker if found
@@ -196,5 +196,4 @@ if __name__ == '__main__':
     # Calculer le solde total des transactions pour le client avec l'ID 1
     balance = get_client_balance(1)
     print(f"Balance for client 1: ${balance:.2f}")
-
 

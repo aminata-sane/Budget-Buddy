@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 import os
 import hashlib
 from database import create_table 
-# from database import verify_client, add_banker, authenticate_banker, get_clients_of_banker, add_client  # Importer les fonctions nécessaires
+from database import verify_client, add_banker, add_client, get_clients_of_banker # Importer les fonctions nécessaires
 from compte_client import ClientAccountApp  # Importer la classe ClientAccountApp
 from portefeuille_client import PortefeuilleClientApp  # Importer la classe PortefeuilleClientApp
 import sqlite3
@@ -129,7 +129,7 @@ class BankingApp:
             return
         
         hashed_password = self.hash_password(password)
-        self.add_banker(name, surname, email, hashed_password)
+        add_banker(name, surname, email, hashed_password)
         messagebox.showinfo("Success", "Registration successful!")
         self.show_banker_page()
     
@@ -167,7 +167,7 @@ class BankingApp:
         
         tk.Label(self.frame, text="Customer list", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
         
-        clients = self.get_clients_of_banker(ID_banker)
+        clients = get_clients_of_banker(ID_banker)
         
         tree = ttk.Treeview(self.frame, columns=('ID', 'Name', 'Surname', 'Email'), show='headings')
         tree.heading('ID', text='ID')
@@ -196,13 +196,6 @@ class BankingApp:
         connection.close()
         return banker  
     
-    def add_banker(self, nom, prenom, email, mot_de_passe):
-        connection = self.create_connection()
-        cursor = connection.cursor()
-        cursor.execute('INSERT INTO banker (Nom, Prenom, Email, Mot_de_passe) VALUES (?, ?, ?, ?)', 
-                       (nom, prenom, email, mot_de_passe))
-        connection.commit()
-        connection.close()
 
     def show_inscription_client(self):
         self.clear_frame()
@@ -238,7 +231,7 @@ class BankingApp:
             return
         
         hashed_password = self.hash_password(password)
-        self.add_client(nom, prenom, email, hashed_password)
+        add_client(nom, prenom, email, hashed_password)
         messagebox.showinfo("Success", "Registration successful!")
         self.show_client_login()
 
@@ -260,7 +253,7 @@ class BankingApp:
     def login_client(self):
         email = self.email_entry.get()
         password = self.password_entry.get()
-        client_id = self.verify_client(email, password)
+        client_id = verify_client(email, password)
         if client_id:
             self.clear_frame()
             ClientAccountApp(self.frame, client_id, back_callback=self.show_home)
