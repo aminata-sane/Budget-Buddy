@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkinter import *
 from PIL import Image, ImageTk, ImageDraw
 import os
 import hashlib
@@ -36,9 +37,6 @@ class BankingApp:
             self.logo_label = tk.Label(self.root, image=self.logo_image, bg="#FB84AE")
             self.logo_label.place(x=20, y=20) 
         
-        title_label = tk.Label(self.root, text="Optimize Your Finances like your code", font=("Arial", 24, "bold"), fg="white", bg="#5E5E5E", padx=20, pady=10)
-        title_label.place(relx=0.5, y=20, anchor="n")
-        
         # Main frame
         self.frame = tk.Frame(self.root, bg="#917d8f") 
         self.frame.place(relx=0.5, rely=0.5, anchor="center", width=screen_width * 0.9, height=screen_height * 0.6)
@@ -46,9 +44,16 @@ class BankingApp:
         self.load_images()
         self.show_home()
 
-    def create_gradient_image(self, width, height, color1, color2):
+    def round_corners(self, image, radius):
+        # Create a mask with rounded corners
+        mask = Image.new("L", image.size, 0)
+        draw = ImageDraw.Draw(mask)
+        draw.rounded_rectangle((0, 0, image.size[0], image.size[1]), radius=radius, fill=255)
+        image.putalpha(mask)
+        return image
 
-# Two colors gradient
+    def create_gradient_image(self, width, height, color1, color2): 
+        # Two colors gradient
         gradient = Image.new("RGB", (width, height), color1)
         draw = ImageDraw.Draw(gradient) 
         
@@ -62,14 +67,21 @@ class BankingApp:
         return gradient
     
     def load_images(self):
-        self.client_photo = self.load_image("images/client.png", (400, 500)) 
-        self.banker_photo = self.load_image("images/bank.png", (400, 500))    
-        self.inscription_photo = self.load_image("images/registration.png", (80, 80))
-        self.connexion_photo = self.load_image("images/login.png", (80, 80))
+        self.logo_photo = self.load_image("images/logo.png", (100, 100), radius=20)  # Adjust image size and radius
 
-    def load_image(self, image_path, size):
+        self.client_photo = self.load_image("images/client.png", (400, 500), radius=40)  # Adjust image size and radius
+        self.banker_photo = self.load_image("images/bank.png", (400, 500), radius=40)  # Adjust image size and radius
+
+        self.inscription_photo = self.load_image("images/regi.png", (400, 400), radius=50)  # Adjust image size and radius
+        self.connexion_photo = self.load_image("images/log.png", (400, 400), radius=50)  # Adjust image size and radius
+
+    def load_image(self, image_path, size, radius=None):
         if os.path.exists(image_path):
             img = Image.open(image_path).resize(size)
+
+            if radius:
+                img = self.round_corners(img, radius)
+                print(f"Image loaded: {image_path}")  #  debug message
             return ImageTk.PhotoImage(img)
         else:
             print(f"Image not found: {image_path}")
@@ -79,9 +91,16 @@ class BankingApp:
     #    Clean frame
         for widget in self.frame.winfo_children():
             widget.destroy()
+        
+        # Clean heding if it exists
+        if hasattr(self, 'title_label'):
+            self.title_label.destroy()
     
     def show_home(self):
         self.clear_frame()
+
+        self.title_label = tk.Label(self.root, text="Optimize Your Finances like your code", font=("Arial", 24, "bold"), fg="white", bg="#5E5E5E", padx=20, pady=10)
+        self.title_label.place(relx=0.5, y=20, anchor="n")
 
         # Left side - client
         client_image_label = tk.Label(self.frame, image=self.client_photo, bg="#FB84AE")
@@ -92,76 +111,135 @@ class BankingApp:
         banker_image_label.place(relx=0.75, rely=0.3, anchor="center")  
         
         #  Button for client
-        client_button = tk.Button(self.frame, text="Customer", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_client_login)
+        client_button = tk.Button(self.frame, text="✨Customer✨", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_client_login)
         client_button.place(relx=0.25, rely=0.9, anchor="center")  
         
         # Button for banker
-        banker_button = tk.Button(self.frame, text="Banker", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_page)
+        banker_button = tk.Button(self.frame, text="✨Banker✨", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_page)
         banker_button.place(relx=0.75, rely=0.9, anchor="center")  
     
     def show_client_login(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Client Login Page", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
+
+        self.title_label = tk.Label(self.root, text="✨ It's gone! ✨", font=("Arial", 24, "bold"), fg="white", bg="#5E5E5E", padx=20, pady=10)
+        self.title_label.place(relx=0.5, y=20, anchor="n")
         
-        inscription_button = tk.Button(self.frame, image=self.inscription_photo, command=self.show_inscription_client, bg="white", bd=0)
-        inscription_button.pack(side=tk.LEFT, padx=20, pady=10)
-        tk.Label(self.frame, text="Inscription", font=("Arial", 12), bg="white", fg="black").pack(side=tk.LEFT, padx=20)
-
-        connexion_button = tk.Button(self.frame, image=self.connexion_photo, command=self.show_connexion_client, bg="white", bd=0)
-        connexion_button.pack(side=tk.RIGHT, padx=20, pady=10)
-        tk.Label(self.frame, text="Connexion", font=("Arial", 12), bg="white", fg="black").pack(side=tk.RIGHT, padx=20)
-
-        tk.Button(self.frame, text="Back to Home", command=self.show_home, bg="white", fg="black", bd=0).pack(pady=10)
-         
-    def show_banker_page(self):
-        self.clear_frame()
-        tk.Label(self.frame, text="Choose your action", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-
         # Left side - Registration
-        inscription_label_b = tk.Label(self.frame, image=self.inscription_photo, bg="#FB84AE")
+        inscription_label_b = tk.Label(self.frame, image=self.inscription_photo, bg="#917d8f", bd=0)
         inscription_label_b.place(relx=0.25, rely=0.3, anchor="center")
 
         # Button for Registration
-        registration_button = tk.Button(self.frame, text="Registration", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_registration)
-        registration_button.place(relx=0.25, rely=0.9, anchor="center")
+        registration_button = tk.Button(self.frame, text="✨ Registration", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_inscription_client)
+        registration_button.place(relx=0.25, rely=0.8, anchor="center")
+
+        registration_label_c = tk.Label(self.frame, text="Welcome customer", font=("Arial", 12, "bold"), bg="#5E5E5E", fg="white", borderwidth=0)
+        registration_label_c.place(relx=0.25, rely=0.95, anchor="center")
 
         # Right side - Login
-        connexion_label_b = tk.Label(self.frame, image=self.connexion_photo, bg="#FB84AE")
+        connexion_label_c = tk.Label(self.frame, image=self.connexion_photo, bg="#917d8f", bd=0)
+        connexion_label_c.place(relx=0.75, rely=0.3, anchor="center")
+
+        # Button for Login
+        login_button = tk.Button(self.frame, text="Login ✨", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_connexion_client)
+        login_button.place(relx=0.75, rely=0.8, anchor="center")
+
+        login_label_b = tk.Label(self.frame, text="Nice to see you again", font=("Arial", 12, "bold"), bg="#5E5E5E", fg="white", borderwidth=0)
+        login_label_b.place(relx=0.75, rely=0.95, anchor="center")
+
+        back_button = tk.Button(self.frame, text="Back", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_home)
+        back_button.place(relx=0.5, rely=0.8, anchor="center")
+   
+         
+    def show_banker_page(self):
+        self.clear_frame()
+
+        self.title_label = tk.Label(self.root, text="✨ It's gone! ✨", font=("Arial", 24, "bold"), fg="white", bg="#5E5E5E", padx=20, pady=10)
+        self.title_label.place(relx=0.5, y=20, anchor="n")
+
+        # Left side - Registration
+        inscription_label_b = tk.Label(self.frame, image=self.inscription_photo, bg="#917d8f", bd=0)
+        inscription_label_b.place(relx=0.25, rely=0.3, anchor="center")
+
+        # Button for Registration
+        registration_button = tk.Button(self.frame, text="✨ Registration", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_registration)
+        registration_button.place(relx=0.25, rely=0.8, anchor="center")
+
+        registration_label_b = tk.Label(self.frame, text="Welcome banker", font=("Arial", 12, "bold"), bg="#5E5E5E", fg="white", borderwidth=0)
+        registration_label_b.place(relx=0.25, rely=0.95, anchor="center")
+
+        # Right side - Login
+        connexion_label_b = tk.Label(self.frame, image=self.connexion_photo, bg="#917d8f", bd=0)
         connexion_label_b.place(relx=0.75, rely=0.3, anchor="center")
 
         # Button for Login
-        login_button = tk.Button(self.frame, text="Login", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_login)
-        login_button.place(relx=0.75, rely=0.9, anchor="center")
+        login_button = tk.Button(self.frame, text="Login ✨", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_login)
+        login_button.place(relx=0.75, rely=0.8, anchor="center")
 
-        tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
+        login_label_b = tk.Label(self.frame, text="Nice to see you again", font=("Arial", 12, "bold"), bg="#5E5E5E", fg="white", borderwidth=0)
+        login_label_b.place(relx=0.75, rely=0.95, anchor="center")
+
+        back_button = tk.Button(self.frame, text="Back", font=("Arial", 18, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_home)
+        back_button.place(relx=0.5, rely=0.8, anchor="center")
 
     def show_banker_registration(self):
         self.clear_frame()
         
-        tk.Label(self.frame, text="Banker registration", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
+        self.title_label = tk.Label(
+            self.root,
+            text="WELCOME TO YOUR NEW LIFE WITH YOUR FINANCES",
+            font=("Arial", 24, "bold"),
+            bg="#757D86", 
+            fg="white",
+            padx=20,
+            pady=10
+        )
+        self.title_label.place(relx=0.5, rely=0.8, anchor="s") 
         
-        tk.Label(self.frame, text="Name:", bg="white", fg="black").pack()
-        self.name_entry = tk.Entry(self.frame)
-        self.name_entry.pack()
+        # Registration form frame
+        form_frame = Frame(self.frame, bg="#757D86", bd=5, relief="ridge")
+        form_frame.place(relx=0.5, rely=0.4, anchor="center", width=550, height=370)
         
-        tk.Label(self.frame, text="Surname:", bg="white", fg="black").pack()
-        self.surname_entry = tk.Entry(self.frame)
-        self.surname_entry.pack()
+        self.first_name_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.first_name_entry.insert(0, "Name") 
+        self.first_name_entry.bind("<FocusIn>", lambda e: self.first_name_entry.delete(0, END))
+        self.first_name_entry.pack(pady=5, fill=X, padx=20)
         
-        tk.Label(self.frame, text="Email:", bg="white", fg="black").pack()
-        self.email_entry = tk.Entry(self.frame)
-        self.email_entry.pack()
+        self.name_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.name_entry.insert(0, "Surame")
+        self.name_entry.bind("<FocusIn>", lambda e: self.name_entry.delete(0, END))
+        self.name_entry.pack(pady=5, fill=X, padx=20)
         
-        tk.Label(self.frame, text="Password:", bg="white", fg="black").pack()
-        self.password_entry = tk.Entry(self.frame, show="*")
-        self.password_entry.pack()
+        self.email_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.email_entry.insert(0, "Email")  
+        self.email_entry.bind("<FocusIn>", lambda e: self.email_entry.delete(0, END))
+        self.email_entry.pack(pady=5, fill=X, padx=20)
+            
+        self.password_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray", show="*")
+        self.password_entry.insert(0, "Password")  
+        self.password_entry.bind("<FocusIn>", lambda e: self.password_entry.delete(0, END))
+        self.password_entry.pack(pady=5, fill=X, padx=20)
+
+        # Password requirements
+        password_requirements = Label(
+            form_frame,
+            text="Please adhere to the following requirements:\n"
+                "10 character maximum.\n"
+                "1 uppercase letter required.\n"
+                "1 special character required.\n"
+                "1 number required.",
+            font=("Arial", 10), bg="white", fg="black", justify=LEFT
+        )
+        password_requirements.pack(pady=10)
         
-        tk.Button(self.frame, text="Register", command=self.register_banker, bg="white", fg="black").pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
+        register_button = Button(form_frame, text="Save", font=("Arial", 14, "bold"), bg="#FFD700", fg="black", borderwidth=0, command=self.register_banker)
+        register_button.pack(pady=20, fill=X, padx=20)
+
+        back_button = Button(form_frame, text="Back",  font=("Arial", 14, "bold"), command=self.show_banker_page, bg="#5E5E5E", fg="white", borderwidth=0)
+        back_button.pack(pady=10, fill=tk.X, padx=20)
     
     def register_banker(self):
-        name = self.name_entry.get()
-        surname = self.surname_entry.get()
+        name = self.first_name_entry.get()
+        surname = self.name_entry.get()
         email = self.email_entry.get()
         password = self.password_entry.get()
         
@@ -177,18 +255,62 @@ class BankingApp:
     def show_banker_login(self):
         self.clear_frame()
         
-        tk.Label(self.frame, text="Banker login", font=("Arial", 14), bg="white", fg="black").pack(pady=10)
+        self.title_label = tk.Label(
+            self.root,
+            text="Welcome back with us",
+            font=("Arial", 24, "bold"),
+            bg="#757D86", 
+            fg="white",
+            padx=20,
+            pady=10
+        )
+        # self.title_label.place(relx=0.5, rely=0.8, anchor="s") 
         
-        tk.Label(self.frame, text="Email:", bg="white", fg="black").pack()
-        self.login_email_entry = tk.Entry(self.frame)
-        self.login_email_entry.pack()
+        # tk.Label(self.frame, text="Email:", bg="white", fg="black").pack()
+        # self.login_email_entry = tk.Entry(self.frame)
+        # self.login_email_entry.pack()
         
-        tk.Label(self.frame, text="Password:", bg="white", fg="black").pack()
-        self.login_password_entry = tk.Entry(self.frame, show="*")
-        self.login_password_entry.pack()
+        # tk.Label(self.frame, text="Password:", bg="white", fg="black").pack()
+        # self.login_password_entry = tk.Entry(self.frame, show="*")
+        # self.login_password_entry.pack()
         
-        tk.Button(self.frame, text="Login", command=self.login_banker, bg="white", fg="black").pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
+        # tk.Button(self.frame, text="Login", command=self.login_banker, bg="white", fg="black").pack(pady=10)
+        # tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
+
+        # Login form frame
+        form_frame = Frame(self.frame, bg="#757D86", bd=5, relief="ridge")
+        form_frame.place(relx=0.5, rely=0.4, anchor="center", width=550, height=300)
+
+        # Download picture
+        self.login_bg_image = self.load_image("images/login.png", (550, 300), radius=20)
+
+        if self.login_bg_image:
+            login_bg_label = Label(form_frame, image=self.login_bg_image, bg="#757D86")
+            login_bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+
+        # Email field
+        email_label = Label(form_frame, text="Email", font=("Arial", 12), bg="#757D86", fg="white")
+        email_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.login_email_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.login_email_entry.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+
+        # Password field
+        password_label = Label(form_frame, text="Password", font=("Arial", 12), bg="#757D86", fg="white")
+        password_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.login_password_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray", show="*")
+        self.login_password_entry.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+
+        # Login button
+        login_button = Button(form_frame, text="Login", font=("Arial", 14, "bold"), bg="#FFD700", fg="black", borderwidth=0, command=self.login_banker)
+        login_button.grid(row=2, column=0, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Back button
+        back_button = Button(form_frame, text="Back", font=("Arial", 14, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_banker_page)
+        back_button.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
+
+        # Configure grid weights to make the form responsive
+        form_frame.grid_columnconfigure(1, weight=1)
     
     def login_banker(self):
         email = self.login_email_entry.get()
@@ -227,9 +349,9 @@ class BankingApp:
         tk.Button(self.frame, text="Back", command=self.show_banker_page, bg="white", fg="black").pack(pady=10)
     
     def on_client_selected(self, event, tree):
-        item = tree.identify_row(event.y)  # Отримуємо ідентифікатор рядка, на який натиснули
+        item = tree.identify_row(event.y) 
         if item:
-            client_id = tree.item(item, 'values')[0]  # Отримуємо ID клієнта з першого стовпця
+            client_id = tree.item(item, 'values')[0]  
             self.show_client_account(client_id)
 
     def show_client_account(self, client_id):
@@ -251,59 +373,123 @@ class BankingApp:
         connection.close()
         return banker  
     
-
     def show_inscription_client(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Formulaire d'inscription Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
+
+        self.title_label = tk.Label(
+            self.root,
+            text="WELCOME TO YOUR NEW LIFE WITH YOUR FINANCES",
+            font=("Arial", 24, "bold"),
+            bg="#757D86", 
+            fg="white",
+            padx=20,
+            pady=10
+        )
+        self.title_label.place(relx=0.5, rely=0.8, anchor="s")
         
-        tk.Label(self.frame, text="Nom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.nom_entry = tk.Entry(self.frame)
-        self.nom_entry.pack(pady=5)
+        # Registration form frame
+        form_frame = Frame(self.frame, bg="#757D86", bd=5, relief="ridge")
+        form_frame.place(relx=0.5, rely=0.4, anchor="center", width=550, height=370)
         
-        tk.Label(self.frame, text="Prénom:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.prenom_entry = tk.Entry(self.frame)
-        self.prenom_entry.pack(pady=5)
+        self.name_entry_c = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.name_entry_c.insert(0, "Name") 
+        self.name_entry_c.bind("<FocusIn>", lambda e: self.name_entry_c.delete(0, END))
+        self.name_entry_c.pack(pady=5, fill=X, padx=20)
+
+        self.surname_entry_c = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.surname_entry_c.insert(0, "Surame")
+        self.surname_entry_c.bind("<FocusIn>", lambda e: self.surname_entry_c.delete(0, END))
+        self.surname_entry_c.pack(pady=5, fill=X, padx=20)
         
-        tk.Label(self.frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.email_entry = tk.Entry(self.frame)
-        self.email_entry.pack(pady=5)
+        self.email_entry_c = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.email_entry_c.insert(0, "Email")  
+        self.email_entry_c.bind("<FocusIn>", lambda e: self.email_entry_c.delete(0, END))
+        self.email_entry_c.pack(pady=5, fill=X, padx=20)
+            
+        self.password_entry_c = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray", show="*")
+        self.password_entry_c.insert(0, "Password")  
+        self.password_entry_c.bind("<FocusIn>", lambda e: self.password_entry_c.delete(0, END))
+        self.password_entry_c.pack(pady=5, fill=X, padx=20)
+
+        # Password requirements
+        password_requirements = Label(
+            form_frame,
+            text="Please adhere to the following requirements:\n"
+                "10 character maximum.\n"
+                "1 uppercase letter required.\n"
+                "1 special character required.\n"
+                "1 number required.",
+            font=("Arial", 10), bg="white", fg="black", justify=LEFT
+        )
+        password_requirements.pack(pady=10)
         
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.password_entry = tk.Entry(self.frame, show="*")
-        self.password_entry.pack(pady=5)
-        
-        tk.Button(self.frame, text="S'inscrire", command=self.register_client, bg="white", fg="black", bd=0).pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
+        register_button = Button(form_frame, text="Save", font=("Arial", 14, "bold"), bg="#FFD700", fg="black", borderwidth=0, command=self.register_client)
+        register_button.pack(pady=20, fill=X, padx=20)
+
+        back_button = Button(form_frame, text="Back",  font=("Arial", 14, "bold"), command=self.show_client_login, bg="#5E5E5E", fg="white", borderwidth=0)
+        back_button.pack(pady=10, fill=tk.X, padx=20)
     
     def register_client(self):
-        nom = self.nom_entry.get()
-        prenom = self.prenom_entry.get()
-        email = self.email_entry.get()
-        password = self.password_entry.get()
+        name = self.name_entry_c.get()
+        surname = self.surname_entry_c.get()
+        email = self.email_entry_c.get()
+        password = self.password_entry_c.get()
         
-        if not (nom and prenom and email and password):
+        if not (name and surname and email and password):
             messagebox.showwarning("Error", "Fill in all fields!")
             return
         
         hashed_password = self.hash_password(password)
-        add_client(nom, prenom, email, hashed_password)
+        add_client(name, surname, email, hashed_password)
         messagebox.showinfo("Success", "Registration successful!")
         self.show_client_login()
 
     def show_connexion_client(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Formulaire de Connexion Client", font=("Arial", 14), bg="white", fg="black").pack(pady=20)
-        
-        tk.Label(self.frame, text="Email:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.email_entry = tk.Entry(self.frame)
-        self.email_entry.pack(pady=5)
-        
-        tk.Label(self.frame, text="Mot de passe:", font=("Arial", 12), bg="white", fg="black").pack(pady=5)
-        self.password_entry = tk.Entry(self.frame, show="*")
-        self.password_entry.pack(pady=5)
-        
-        tk.Button(self.frame, text="Se connecter", command=self.login_client, bg="white", fg="black", bd=0).pack(pady=10)
-        tk.Button(self.frame, text="Back", command=self.show_client_login, bg="white", fg="black", bd=0).pack(pady=10)
+
+        self.title_label = tk.Label(
+            self.root,
+            text="Welcome back with us",
+            font=("Arial", 24, "bold"),
+            bg="#757D86", 
+            fg="white",
+            padx=20,
+            pady=10
+        )
+        # Login form frame
+        form_frame = Frame(self.frame, bg="#757D86", bd=5, relief="ridge")
+        form_frame.place(relx=0.5, rely=0.4, anchor="center", width=550, height=300)
+
+        # Download picture
+        self.login_bg_image = self.load_image("images/login.png", (550, 300), radius=20)
+
+        if self.login_bg_image:
+            login_bg_label = Label(form_frame, image=self.login_bg_image, bg="#757D86")
+            login_bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+
+        # Email field
+        email_label = Label(form_frame, text="Email", font=("Arial", 12), bg="#757D86", fg="white")
+        email_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.login_email_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray")
+        self.login_email_entry.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+
+        # Password field
+        password_label = Label(form_frame, text="Password", font=("Arial", 12), bg="#757D86", fg="white")
+        password_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.login_password_entry = Entry(form_frame, font=("Arial", 12), bg="#F0F0F0", fg="gray", show="*")
+        self.login_password_entry.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+
+        # Login button
+        login_button = Button(form_frame, text="Login", font=("Arial", 14, "bold"), bg="#FFD700", fg="black", borderwidth=0, command=self.login_client)
+        login_button.grid(row=2, column=0, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Back button
+        back_button = Button(form_frame, text="Back", font=("Arial", 14, "bold"), bg="#5E5E5E", fg="white", borderwidth=0, command=self.show_client_login)
+        back_button.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
+
+        # Configure grid weights to make the form responsive
+        form_frame.grid_columnconfigure(1, weight=1)
     
     def login_client(self):
         email = self.email_entry.get()
